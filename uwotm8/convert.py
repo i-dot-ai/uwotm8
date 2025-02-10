@@ -6,7 +6,7 @@ from breame.spelling import american_spelling_exists, get_british_spelling
 
 def convert_american_to_british_spelling(  # noqa: C901
     text: str, strict: bool = False
-) -> str:
+) -> Any:
     """
     Convert American English spelling to British English spelling.
 
