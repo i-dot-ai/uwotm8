@@ -5,37 +5,49 @@ site_description: Converting American English to British English
 site_author: Incubator for AI
 edit_uri: edit/main/docs/
 repo_name: i-dot-ai/uwotm8
-copyright: Maintained by <a href="https://i-dot-ai.com">Florian</a>.
+copyright: Maintained by <a href="https://i-dot-ai.com">i.AI</a>
 
 nav:
   - Home: index.md
   - Modules: modules.md
-plugins:
-  - search
-  - mkdocstrings:
-      handlers:
-        python:
-          setup_commands:
-            - import sys
-            - sys.path.append('../')
+
 theme:
+  logo: assets/i-dot-ai-white-invert.svg
+  favicon: assets/i-dot-ai.svg
+
   name: material
-  feature:
-    tabs: true
+  font:
+    text: "Inter"
+    code: "DM Mono"
+
+  features:
+    - content.tooltips
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - navigation.indexes
+    - content.tooltips
+    - navigation.path
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - navigation.tabs
+
   palette:
+    # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: white
-      accent: deep orange
+      primary: custom
       toggle:
-        icon: material/brightness-7
+        icon: material/weather-sunny
         name: Switch to dark mode
+
+    # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: black
-      accent: deep orange
+      primary: custom
       toggle:
-        icon: material/brightness-4
+        icon: material/weather-night
         name: Switch to light mode
   icon:
     repo: fontawesome/brands/github
@@ -46,9 +58,59 @@ extra:
       link: https://github.com/i-dot-ai/uwotm8
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/uwotm8
+    - icon: fontawesome/solid/globe
+      link: https://ai.gov.uk
+  generator: false
+
+plugins:
+  minify:
+    minify_html: true
+  search: null
+  mermaid2: null
+  git-revision-date-localized:
+    type: timeago
+    locale: en
+    fallback_to_build_date: true
+  glightbox: null
+  mkdocstrings:
+    handlers:
+      python:
+        options:
+          extensions:
+            - griffe_typingdoc
+          show_root_heading: true
+          show_if_no_docstring: true
+          inherited_members: true
+          members_order: source
+          separate_signature: true
+          unwrap_annotated: true
+          filters:
+            - "!^_"
+          merge_init_into_class: true
+          docstring_section_style: spacy
+          signature_crossrefs: true
+          show_symbol_type_heading: true
+          show_symbol_type_toc: true
 
 markdown_extensions:
+  - abbr
+  - attr_list
+  - meta
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.pathconverter
   - toc:
       permalink: true
   - pymdownx.arithmatex:
       generic: true
+  - codehilite:
+      guess_lang: true
+      use_pygments: true
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra_css:
+  - assets/extra.css
