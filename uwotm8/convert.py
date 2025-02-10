@@ -22,7 +22,17 @@ def convert_american_to_british_spelling(  # noqa: C901
 
     try:
 
-        def replace_word(match):
+        def replace_word(match: re.Match) -> str:
+            """
+            Replace a word with its British English spelling.
+
+            Args:
+                match: The match object.
+
+            Returns:
+                The word with its spelling converted to British English.
+            """
+
             # The first group contains any leading punctuation/spaces
             # The second group contains the word
             # The third group contains any trailing punctuation/spaces
