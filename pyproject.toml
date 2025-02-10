@@ -1,26 +1,27 @@
-[tool.poetry]
+[project]
 name = "uwotm8"
 version = "0.0.1"
 description = "Converting American English to British English"
-authors = ["Incubator for AI <i-dot-ai-enquiries@cabinetoffice.gov.uk>"]
+authors = [{name = "i.AI", email = "i-dot-ai-enquiries@cabinetoffice.gov.uk"}]
 repository = "https://github.com/i-dot-ai/uwotm8"
 documentation = "https://i-dot-ai.github.io/uwotm8/"
+license = "MIT"
 readme = "README.md"
 packages = [
   {include = "uwotm8"}
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4.0"
+python = ">=3.9,<4.0"
 breame = "^0.1.2"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2.0"
-pytest-cov = "^4.0.0"
+pytest = "8.3.4"
+pytest-cov = "6.0.0"
 deptry = "^0.16.2"
-mypy = "^1.5.1"
-pre-commit = "^3.4.0"
-tox = "^4.11.1"
+mypy = "1.15.0"
+pre-commit = "4.1.0"
+tox = "4.24.1"
 ruff = "^0.9.6"
 mkdocs = "1.6.1"
 
