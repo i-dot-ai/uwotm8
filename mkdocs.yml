@@ -1,0 +1,54 @@
+site_name: uwotm8
+repo_url: https://github.com/i-dot-ai/uwotm8
+site_url: https://i-dot-ai.github.io/uwotm8
+site_description: Converting American English to British English
+site_author: Incubator for AI
+edit_uri: edit/main/docs/
+repo_name: i-dot-ai/uwotm8
+copyright: Maintained by <a href="https://i-dot-ai.com">Florian</a>.
+
+nav:
+  - Home: index.md
+  - Modules: modules.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          setup_commands:
+            - import sys
+            - sys.path.append('../')
+theme:
+  name: material
+  feature:
+    tabs: true
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/i-dot-ai/uwotm8
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/uwotm8
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
