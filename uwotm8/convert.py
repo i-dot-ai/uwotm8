@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 from breame.spelling import american_spelling_exists, get_british_spelling
 
@@ -22,7 +23,7 @@ def convert_american_to_british_spelling(  # noqa: C901
 
     try:
 
-        def replace_word(match: re.Match) -> str:
+        def replace_word(match: re.Match) -> Any:
             """
             Replace a word with its British English spelling.
 
