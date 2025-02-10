@@ -49,8 +49,6 @@ check_untyped_defs = "True"
 warn_return_any = "True"
 warn_unused_ignores = "True"
 show_error_codes = "True"
-
-[tool.mypy."breame.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
