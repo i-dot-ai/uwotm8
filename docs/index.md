@@ -20,7 +20,7 @@ pip install uwotm8
 ```python
 from uwotm8 import convert_american_to_british_spelling
 
-en_gb_str = convert_american_to_british_spelling("Our American neighbours' dialog can be a bit off-colour when you're used to British spelling, you recognize?")
+en_gb_str = convert_american_to_british_spelling("Our American neighbors' dialog can be a bit off-color when you're used to British spelling, you recognize?")
 print(en_gb_str)
 ```
 
