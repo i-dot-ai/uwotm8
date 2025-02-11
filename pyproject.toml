@@ -2,7 +2,7 @@
 name = "uwotm8"
 version = "0.0.2"
 description = "Converting American English to British English"
-authors = [{name = "i.AI", email = "i-dot-ai-enquiries@cabinetoffice.gov.uk"}]
+authors = [{name = "i.AI", email = "packages@cabinetoffice.gov.uk"}]
 repository = "https://github.com/i-dot-ai/uwotm8"
 documentation = "https://i-dot-ai.github.io/uwotm8/"
 license = "MIT"
