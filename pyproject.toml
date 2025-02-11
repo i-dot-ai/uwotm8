@@ -1,6 +1,6 @@
 [project]
 name = "uwotm8"
-version = "0.0.2"
+version = "0.0.3"
 description = "Converting American English to British English"
 authors = [{name = "i.AI", email = "packages@cabinetoffice.gov.uk"}]
 repository = "https://github.com/i-dot-ai/uwotm8"
