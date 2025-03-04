@@ -4,11 +4,29 @@ import re
 import sys
 from collections.abc import Generator, Iterable
 from pathlib import Path
-from typing import Any, Optional, Union, list, tuple
+from typing import Any, Optional, Union
 
 from breame.spelling import american_spelling_exists, get_british_spelling
 
+# Add this constant near the top of the file, after imports but before function definitions
+CONVERSION_BLACKLIST = {
+    "filter": "philtre",  # Modern word vs archaic spelling
+    "filet": "fillet",  # Common culinary term
+    "program": "programme",  # Computing contexts often prefer "program"
+    "disk": "disc",  # Computing contexts often prefer "disk"
+    "analog": "analogue",  # Technical contexts often prefer "analog"
+    "catalog": "catalogue",  # Business contexts often prefer "catalog"
+    "plow": "plough",  # Agricultural contexts
+    "pajama": "pyjama",  # Commonly used in American form
+    "tire": "tyre",  # Automotive contexts often prefer "tire"
+    "check": "cheque",  # Different meanings in different contexts
+    "gray": "grey",  # Common in color specifications
+    "mold": "mould",  # Scientific contexts often prefer "mold"
+    "install": "instal",  # British spelling is "instal"
+}
 
+
+# Then modify the convert_american_to_british_spelling function to check the blacklist
 def convert_american_to_british_spelling(  # noqa: C901
     text: str, strict: bool = False
 ) -> Any:
@@ -26,6 +44,40 @@ def convert_american_to_british_spelling(  # noqa: C901
         return text
     try:
 
+        def should_skip_word(word: str, pre: str, post: str, match_start: int, match_end: int) -> bool:
+            """Check if the word should be skipped for conversion."""
+            # Skip if within code blocks
+            if "`" in pre or "`" in post:
+                return True
+
+            # Skip if word is in the blacklist
+            if word.lower() in CONVERSION_BLACKLIST:
+                return True
+
+            # Check for URL/URI context
+            line_start = text.rfind("\n", 0, match_start)
+            if line_start == -1:
+                line_start = 0
+            else:
+                line_start += 1
+
+            line_end = text.find("\n", match_end)
+            if line_end == -1:
+                line_end = len(text)
+
+            line_context = text[line_start:line_end]
+
+            # Skip if word appears to be in a URL/URI
+            return "://" in line_context or "www." in line_context
+
+        def preserve_capitalization(original: str, replacement: str) -> str:
+            """Preserve the capitalization from the original word in the replacement."""
+            if original.isupper():
+                return replacement.upper()
+            elif original.istitle():
+                return replacement.title()
+            return replacement
+
         def replace_word(match: re.Match) -> Any:
             """
             Replace a word with its British English spelling.
@@ -40,17 +92,14 @@ def convert_american_to_british_spelling(  # noqa: C901
             # The second group contains the word
             # The third group contains any trailing punctuation/spaces
             pre, word, post = match.groups()
-            # Skip if within code blocks
-            if "`" in pre or "`" in post:
+
+            if should_skip_word(word, pre, post, match.start(), match.end()):
                 return match.group(0)
+
             if american_spelling_exists(word.lower()):
                 try:
                     british = get_british_spelling(word.lower())
-                    # Preserve capitalization
-                    if word.isupper():
-                        british = british.upper()
-                    elif word.istitle():
-                        british = british.title()
+                    british = preserve_capitalization(word, british)
                     return pre + british + post
                 except Exception:
                     if strict:
@@ -265,7 +314,7 @@ def main() -> int:
             return 0
     else:
         if modified > 0:
-            print(f"Reformatted {modified} of {total} files")
+            print(f"🇬🇧 Reformatted {modified} of {total} files")
         else:
             print(f"All {total} files left unchanged")
         return 0
