@@ -11,6 +11,9 @@ packages = [
   {include = "uwotm8"}
 ]
 
+[project.scripts]
+uwotm8 = "uwotm8.convert:main"
+
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
 breame = "^0.1.2"
