@@ -54,6 +54,11 @@ def convert_american_to_british_spelling(  # noqa: C901
             if word.lower() in CONVERSION_BLACKLIST:
                 return True
 
+            # Check for hyphenated terms (e.g., "3-color", "x-coordinate")
+            # If the word is part of a hyphenated term, we should skip it
+            if "-" in pre and pre.rstrip().endswith("-"):
+                return True
+
             # Check for URL/URI context
             line_start = text.rfind("\n", 0, match_start)
             if line_start == -1:
