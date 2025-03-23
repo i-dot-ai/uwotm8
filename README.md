@@ -6,22 +6,50 @@
 [![Commit activity](https://img.shields.io/github/commit-activity/m/i-dot-ai/uwotm8)](https://img.shields.io/github/commit-activity/m/i-dot-ai/uwotm8)
 [![License](https://img.shields.io/github/license/i-dot-ai/uwotm8)](https://img.shields.io/github/license/i-dot-ai/uwotm8)
 
-Converting American English to British English
+Converting American English to British English - a tool to automatically convert American English spelling to British English spelling in your text and code files.
 
 - **Github repository**: <https://github.com/i-dot-ai/uwotm8/>
 - **Documentation** <https://i-dot-ai.github.io/uwotm8/>
 
-To finalize the set-up for publishing to PyPI or Artifactory, see [here](https://fpgmaas.github.io/cookiecutter-poetry/features/publishing/#set-up-for-pypi).
-For activating the automatic documentation with MkDocs, see [here](https://fpgmaas.github.io/cookiecutter-poetry/features/mkdocs/#enabling-the-documentation-on-github).
-To enable the code coverage reports, see [here](https://fpgmaas.github.io/cookiecutter-poetry/features/codecov/).
+## Installation
 
-## Releasing a new version
+```bash
+pip install uwotm8
+```
 
-- Create an API Token on [PyPI](https://pypi.org/).
-- Add the API Token to your projects secrets with the name `PYPI_TOKEN` by visiting [this page](https://github.com/i-dot-ai/uwotm8/settings/secrets/actions/new).
-- Create a [new release](https://github.com/i-dot-ai/uwotm8/releases/new) on Github.
-- Create a new tag in the form `*.*.*`.
-- For more details, see [here](https://fpgmaas.github.io/cookiecutter-poetry/features/cicd/#how-to-trigger-a-release).
+## Quick Start
+
+Convert a single file:
+
+```bash
+uwotm8 example.txt
+```
+
+Read from stdin and write to stdout:
+
+```bash
+echo "I love the color gray." | uwotm8
+# Output: "I love the colour grey."
+```
+
+Use in Python code:
+
+```python
+from uwotm8 import convert_american_to_british_spelling
+
+en_gb_str = convert_american_to_british_spelling("Our American neighbors' dialog can be a bit off-color.")
+print(en_gb_str)
+# Output: "Our American neighbours' dialogue can be a bit off-colour."
+```
+
+## Features
+
+- Converts common American English spellings to British English
+- Preserves words in special contexts (code blocks, URLs, hyphenated terms)
+- Maintains a blacklist of technical terms that shouldn't be converted
+- Preserves original capitalization patterns
+
+For full documentation, examples, and advanced usage, please visit the [documentation site](https://i-dot-ai.github.io/uwotm8/).
 
 ---
 

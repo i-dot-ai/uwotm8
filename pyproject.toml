@@ -1,6 +1,6 @@
 [project]
 name = "uwotm8"
-version = "0.0.4"
+version = "0.1.0"
 description = "Converting American English to British English"
 authors = [{name = "i.AI", email = "packages@cabinetoffice.gov.uk"}]
 repository = "https://github.com/i-dot-ai/uwotm8"
@@ -10,6 +10,9 @@ readme = "README.md"
 packages = [
   {include = "uwotm8"}
 ]
+
+[project.scripts]
+uwotm8 = "uwotm8.convert:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
