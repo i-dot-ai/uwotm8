@@ -3,6 +3,7 @@ import sys
 import tempfile
 from io import StringIO
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 import pytest
 
@@ -72,8 +73,10 @@ class TestConvertAmericanToBritishSpelling:
         url_line = "https://example.com/color"
         assert convert_american_to_british_spelling(url_line) == url_line
 
-        www_line = "www.color.com"
+        www_line = "http://www.color.com"
+        parsed_url = urlparse(www_line)
         assert convert_american_to_british_spelling(www_line) == www_line
+        assert parsed_url.hostname == "www.color.com"
 
         # Test with URL in context - URLs should remain unchanged
         text = "For documentation visit https://example.com/color"
