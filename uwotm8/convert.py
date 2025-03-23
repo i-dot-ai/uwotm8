@@ -268,7 +268,7 @@ def _convert_with_blacklist(content: str, temp_blacklist: dict[str, str], strict
     CONVERSION_BLACKLIST.clear()
     CONVERSION_BLACKLIST.update(original_blacklist)
 
-    return converted_content
+    return str(converted_content)
 
 
 def convert_python_comments_only(
@@ -304,7 +304,7 @@ def convert_python_comments_only(
     # Handle single-line comments (# comments)
     comment_pattern = r"(#[^\n]*)"
 
-    def replace_comment(match):
+    def replace_comment(match: re.Match[str]) -> str:
         nonlocal modified
         comment = match.group(1)
         prefix = "#"
@@ -313,7 +313,7 @@ def convert_python_comments_only(
 
         if converted_text != comment_text:
             modified = True
-            return prefix + converted_text
+            return prefix + str(converted_text)
         return comment
 
     modified_content = re.sub(comment_pattern, replace_comment, modified_content)
@@ -322,7 +322,7 @@ def convert_python_comments_only(
     # First, we'll use regex to find triple-quoted strings
     docstring_pattern = r'("""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\')'
 
-    def replace_docstring(match):
+    def replace_docstring(match: re.Match[str]) -> str:
         nonlocal modified
         docstring = match.group(1)
         quote_style = '"""' if docstring.startswith('"""') else "'''"
@@ -423,7 +423,7 @@ def process_paths(
     return total_count, modified_count
 
 
-def _handle_file_with_output(args, src_file: Path) -> int:
+def _handle_file_with_output(args: argparse.Namespace, src_file: Path) -> int:
     """Handle the case where a single file is processed with output option."""
     if src_file.suffix == ".py" and args.comments_only:
         changes_made = convert_python_comments_only(
