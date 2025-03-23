@@ -11,6 +11,7 @@ from uwotm8.convert import (
     CONVERSION_BLACKLIST,
     convert_american_to_british_spelling,
     convert_file,
+    convert_python_comments_only,
     convert_stream,
     main,
     process_paths,
@@ -243,6 +244,140 @@ class TestConvertFile:
                 assert f.read() == "This text has colour."
 
 
+class TestConvertPythonCommentsOnly:
+    def test_comments_only_conversion(self):
+        """Test that only Python comments are converted."""
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".py", delete=False) as temp_file:
+            temp_path = temp_file.name
+            temp_file.write("""# This comment has color and should be converted
+def example_function():
+    \"\"\"
+    This docstring has color and should be converted.
+    \"\"\"
+    # Another comment with flavor
+    variable = "This string has color but should NOT be converted"
+    print("Text with color stays the same")
+""")
+
+        try:
+            # Convert the file
+            modified = convert_python_comments_only(temp_path)
+            assert modified is True
+
+            # Read the converted file
+            with open(temp_path) as f:
+                content = f.read()
+
+            # Comments should be converted
+            assert "# This comment has colour and should be converted" in content
+            assert "# Another comment with flavour" in content
+
+            # Docstring should be converted
+            assert "This docstring has colour and should be converted." in content
+
+            # Code should not be converted
+            assert 'variable = "This string has color but should NOT be converted"' in content
+            assert 'print("Text with color stays the same")' in content
+
+            # Check mode should detect changes but not apply them
+            with open(temp_path, "w") as f:
+                f.write("# This comment has color\nprint('code with color')")
+
+            modified = convert_python_comments_only(temp_path, check=True)
+            assert modified is True
+
+            # File should not be modified in check mode
+            with open(temp_path) as f:
+                assert f.read() == "# This comment has color\nprint('code with color')"
+        finally:
+            os.unlink(temp_path)
+
+    def test_multilevel_docstrings(self):
+        """Test that nested docstrings are converted properly."""
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".py", delete=False) as temp_file:
+            temp_path = temp_file.name
+            temp_file.write('''"""
+Module docstring with color.
+
+This is a multiline docstring with flavor.
+"""
+
+def function():
+    """Function docstring with color."""
+    # Comment with color
+    pass
+''')
+
+        try:
+            modified = convert_python_comments_only(temp_path)
+            assert modified is True
+
+            with open(temp_path) as f:
+                content = f.read()
+
+            # Both docstrings should be converted
+            assert "Module docstring with colour" in content
+            assert "multiline docstring with flavour" in content
+            assert "Function docstring with colour" in content
+
+            # Comment should be converted
+            assert "# Comment with colour" in content
+        finally:
+            os.unlink(temp_path)
+
+    def test_docstring_argument_names_preservation(self):
+        """Test that argument names in docstrings are not converted."""
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".py", delete=False) as temp_file:
+            temp_path = temp_file.name
+            temp_file.write('''def process_data(color_map, flavor_list, center_point):
+    """Process data using various parameters.
+
+    Args:
+        color_map: A mapping of colors to values. The colors in this map determine output.
+        flavor_list: A list of flavors to process.
+        center_point: The center point for calculations.
+
+    This function will analyze the color data and output results centered around
+    the center_point. The flavor affects how we analyze the color.
+    """
+    # This comment has color and flavor
+    return color_map, flavor_list
+''')
+
+        try:
+            # Convert the file
+            modified = convert_python_comments_only(temp_path)
+            assert modified is True
+
+            # Read the converted file
+            with open(temp_path) as f:
+                content = f.read()
+
+            # Verify that parameter names in Args section are preserved
+            assert "color_map: A mapping of colours to values" in content
+            assert "The colours in this map determine output" in content
+            assert "flavor_list: A list of flavours to process" in content
+            assert "center_point: The center point for calculations" in content  # Parameter name preserved
+
+            # Verify that parameter names when used as code references remain unchanged
+            assert "the center_point" in content  # Parameter name preserved in reference
+            assert (
+                "analyse the color data" in content
+            )  # "analyse" converted but "color" preserved in text since it's a param name
+            assert "The flavor affects" in content  # "flavor" preserved in text since it's a param name
+
+            # Verify that function parameters in the definition are not modified
+            assert "def process_data(color_map, flavor_list, center_point):" in content
+
+            # Verify that comment is converted
+            assert "# This comment has colour and flavour" in content
+
+            # Verify that return variables are not modified
+            assert "return color_map, flavor_list" in content
+        finally:
+            os.unlink(temp_path)
+
+
 class TestProcessPaths:
     def test_process_single_file(self):
         """Test processing a single file."""
@@ -311,6 +446,38 @@ class TestProcessPaths:
                 assert f.read() == "This text has color."
         finally:
             os.unlink(temp_path)
+
+    def test_comments_only_mode(self):
+        """Test comments_only mode in process_paths."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create a Python file
+            py_file_path = os.path.join(temp_dir, "script.py")
+            with open(py_file_path, "w") as f:
+                f.write("""# Comment with color
+variable = "String with color"
+# Another comment with flavor
+""")
+
+            # Create a text file
+            txt_file_path = os.path.join(temp_dir, "document.txt")
+            with open(txt_file_path, "w") as f:
+                f.write("This text has color.")
+
+            # Process with comments_only=True
+            total, modified = process_paths([temp_dir], comments_only=True)
+            assert total == 2
+            assert modified == 2
+
+            # Python file should have only comments converted
+            with open(py_file_path) as f:
+                py_content = f.read()
+                assert "# Comment with colour" in py_content
+                assert 'variable = "String with color"' in py_content
+                assert "# Another comment with flavour" in py_content
+
+            # Text file should be fully converted (not affected by comments_only)
+            with open(txt_file_path) as f:
+                assert f.read() == "This text has colour."
 
     def test_process_multiple_paths(self):
         """Test processing of multiple mixed paths."""
@@ -453,3 +620,30 @@ class TestMainFunction:
             exit_code = main()
             assert exit_code == 0
             assert fake_output.getvalue() == expected_output
+
+    def test_comments_only_mode_flag(self):
+        """Test comments-only mode flag in main."""
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".py", delete=False) as temp_file:
+            temp_path = temp_file.name
+            temp_file.write("""# This comment has color
+variable = "String with color"
+# Another comment with flavor
+""")
+
+        try:
+            with (
+                patch.object(sys, "argv", ["uwotm8", temp_path, "--comments-only"]),
+                patch.object(sys, "stdout", StringIO()) as fake_output,
+            ):
+                exit_code = main()
+                assert exit_code == 0
+                assert "Reformatted" in fake_output.getvalue()
+
+            # Verify that only comments were converted
+            with open(temp_path) as f:
+                content = f.read()
+                assert "# This comment has colour" in content
+                assert 'variable = "String with color"' in content
+                assert "# Another comment with flavour" in content
+        finally:
+            os.unlink(temp_path)

@@ -187,10 +187,207 @@ def convert_file(
     return True
 
 
+def _extract_parameter_names_from_docstring(content: str) -> list[str]:
+    """
+    Extract parameter names from a docstring's Args section.
+
+    Args:
+        content: The docstring content
+
+    Returns:
+        List of parameter names
+    """
+    lines = content.split("\n")
+    in_args_section = False
+    parameter_names = []
+
+    for _, line in enumerate(lines):
+        stripped = line.strip()
+
+        # Check if we're entering the Args section
+        if stripped == "Args:" or stripped == "Arguments:":
+            in_args_section = True
+            continue
+
+        # Check if we're exiting the Args section (empty line or new section)
+        if in_args_section and (not stripped or stripped.endswith(":")):
+            in_args_section = False
+            continue
+
+        # Extract parameter names from the Args section
+        if in_args_section and ":" in stripped:
+            param_name = stripped.split(":", 1)[0].strip()
+            parameter_names.append(param_name)
+
+    return parameter_names
+
+
+def _create_parameter_blacklist(parameter_names: list[str]) -> dict[str, str]:
+    """
+    Create a blacklist dictionary from parameter names.
+
+    Args:
+        parameter_names: List of parameter names
+
+    Returns:
+        Dictionary of words to blacklist
+    """
+    temp_blacklist = {}
+    for param in parameter_names:
+        # For each parameter, check if it contains words that would be converted
+        param_words = re.findall(r"[a-zA-Z]+", param)
+        for word in param_words:
+            if american_spelling_exists(word.lower()):
+                temp_blacklist[word.lower()] = word.lower()
+
+    return temp_blacklist
+
+
+def _convert_with_blacklist(content: str, temp_blacklist: dict[str, str], strict: bool = False) -> str:
+    """
+    Convert content with a temporary blacklist.
+
+    Args:
+        content: Text to convert
+        temp_blacklist: Dictionary of words to temporarily blacklist
+        strict: Whether to raise exceptions on conversion errors
+
+    Returns:
+        Converted content
+    """
+    # Temporarily add our parameter-derived words to the blacklist
+    original_blacklist = CONVERSION_BLACKLIST.copy()
+    for word, keep_as in temp_blacklist.items():
+        if word not in CONVERSION_BLACKLIST:
+            CONVERSION_BLACKLIST[word] = keep_as
+
+    # Convert the content with our expanded blacklist
+    converted_content = convert_american_to_british_spelling(content, strict=strict)
+
+    # Restore the original blacklist
+    CONVERSION_BLACKLIST.clear()
+    CONVERSION_BLACKLIST.update(original_blacklist)
+
+    return converted_content
+
+
+def convert_python_comments_only(
+    src: Union[str, Path],
+    dst: Optional[Union[str, Path]] = None,
+    strict: bool = False,
+    check: bool = False,
+) -> bool:
+    """
+    Convert American English spelling to British English spelling only in Python comments and docstrings.
+
+    Args:
+        src: Source file path.
+        dst: Destination file path. If None, content is written back to source file.
+        strict: Whether to raise an exception if a word cannot be converted.
+        check: If True, only check if changes would be made without modifying files.
+
+    Returns:
+        True if changes were made or would be made (if check=True), False otherwise.
+    """
+    src_path = Path(src)
+    if not src_path.exists():
+        raise FileNotFoundError()
+
+    # Read the file content
+    with open(src_path, encoding="utf-8") as f:
+        content = f.read()
+
+    # Use a simpler approach with regular expressions for comments
+    modified_content = content
+    modified = False
+
+    # Handle single-line comments (# comments)
+    comment_pattern = r"(#[^\n]*)"
+
+    def replace_comment(match):
+        nonlocal modified
+        comment = match.group(1)
+        prefix = "#"
+        comment_text = comment[len(prefix) :]
+        converted_text = convert_american_to_british_spelling(comment_text, strict=strict)
+
+        if converted_text != comment_text:
+            modified = True
+            return prefix + converted_text
+        return comment
+
+    modified_content = re.sub(comment_pattern, replace_comment, modified_content)
+
+    # Handle docstrings with special handling for parameter names in docstring Args
+    # First, we'll use regex to find triple-quoted strings
+    docstring_pattern = r'("""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\')'
+
+    def replace_docstring(match):
+        nonlocal modified
+        docstring = match.group(1)
+        quote_style = '"""' if docstring.startswith('"""') else "'''"
+
+        # Extract the content between the triple quotes
+        content = docstring[3:-3]
+
+        # Get parameter names from docstring
+        parameter_names = _extract_parameter_names_from_docstring(content)
+
+        # Create blacklist from parameter names
+        temp_blacklist = _create_parameter_blacklist(parameter_names)
+
+        # Convert with the temporary blacklist
+        converted_content = _convert_with_blacklist(content, temp_blacklist, strict)
+
+        if converted_content != content:
+            modified = True
+            return quote_style + converted_content + quote_style
+        return docstring
+
+    modified_content = re.sub(docstring_pattern, replace_docstring, modified_content)
+
+    # If no changes were made or we're just checking, return early
+    if not modified or check:
+        return modified
+
+    # Write the converted content back to the file
+    if dst is None:
+        dst = src
+    dst_path = Path(dst)
+
+    # Create directory if it doesn't exist
+    dst_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(dst_path, "w", encoding="utf-8") as f:
+        f.write(modified_content)
+
+    return modified
+
+
+def _process_file(path: Path, strict: bool, check: bool, comments_only: bool) -> bool:
+    """
+    Process a single file for conversion.
+
+    Args:
+        path: File path to process
+        strict: Whether to raise errors on conversion failures
+        check: Whether to check only without modifying
+        comments_only: Whether to convert only comments in Python files
+
+    Returns:
+        True if the file was modified or would be modified
+    """
+    if path.suffix == ".py" and comments_only:
+        return convert_python_comments_only(path, strict=strict, check=check)
+    else:
+        return convert_file(path, strict=strict, check=check)
+
+
 def process_paths(
     paths: list[Union[str, Path]],
     check: bool = False,
     strict: bool = False,
+    comments_only: bool = False,
 ) -> tuple[int, int]:
     """
     Process multiple files and directories.
@@ -199,6 +396,7 @@ def process_paths(
         paths: list of file and directory paths.
         check: If True, only check if changes would be made without modifying files.
         strict: Whether to raise an exception if a word cannot be converted.
+        comments_only: If True, only convert comments in Python files.
 
     Returns:
         tuple of (number of files processed, number of files changed).
@@ -211,18 +409,45 @@ def process_paths(
 
         if path.is_file():
             total_count += 1
-            if convert_file(path, strict=strict, check=check):
+            if _process_file(path, strict, check, comments_only):
                 modified_count += 1
         elif path.is_dir():
             for root, _, files in os.walk(path):
                 for file in files:
-                    if file.endswith(".py") or file.endswith(".txt") or file.endswith(".md"):
-                        file_path = Path(root) / file
+                    file_path = Path(root) / file
+                    if file.endswith((".py", ".txt", ".md")):
                         total_count += 1
-                        if convert_file(file_path, strict=strict, check=check):
+                        if _process_file(file_path, strict, check, comments_only):
                             modified_count += 1
 
     return total_count, modified_count
+
+
+def _handle_file_with_output(args, src_file: Path) -> int:
+    """Handle the case where a single file is processed with output option."""
+    if src_file.suffix == ".py" and args.comments_only:
+        changes_made = convert_python_comments_only(
+            src_file,
+            args.output,
+            strict=args.strict,
+            check=args.check,
+        )
+    else:
+        changes_made = convert_file(
+            src_file,
+            args.output,
+            strict=args.strict,
+            check=args.check,
+        )
+
+    if args.check:
+        return 1 if changes_made else 0
+    else:
+        if changes_made:
+            print(f"Converted: {src_file} -> {args.output}")
+        else:
+            print(f"No changes needed: {src_file}")
+        return 0
 
 
 def main() -> int:
@@ -249,6 +474,12 @@ def main() -> int:
         "--strict",
         action="store_true",
         help="Raise an exception if a word cannot be converted.",
+    )
+
+    parser.add_argument(
+        "--comments-only",
+        action="store_true",
+        help="For Python files, only convert comments and docstrings, leaving code unchanged.",
     )
 
     parser.add_argument(
@@ -287,28 +518,14 @@ def main() -> int:
 
     # Process single file with output option
     if len(args.src) == 1 and args.output and Path(args.src[0]).is_file():
-        changes_made = convert_file(
-            args.src[0],
-            args.output,
-            strict=args.strict,
-            check=args.check,
-        )
-
-        if args.check:
-            return 1 if changes_made else 0
-        else:
-            if changes_made:
-                print(f"Converted: {args.src[0]} -> {args.output}")
-            else:
-                print(f"No changes needed: {args.src[0]}")
-            return 0
+        return _handle_file_with_output(args, Path(args.src[0]))
 
     # Process multiple paths
     if args.output:
         print("Error: --output option can only be used with a single file input")
         return 2
 
-    total, modified = process_paths(args.src, check=args.check, strict=args.strict)
+    total, modified = process_paths(args.src, check=args.check, strict=args.strict, comments_only=args.comments_only)
 
     if args.check:
         if modified > 0:

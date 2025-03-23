@@ -25,6 +25,12 @@ Convert a single file:
 uwotm8 example.txt
 ```
 
+Convert only comments and docstrings in Python files:
+
+```bash
+uwotm8 --comments-only my_script.py
+```
+
 Read from stdin and write to stdout:
 
 ```bash
@@ -48,6 +54,7 @@ print(en_gb_str)
 - Preserves words in special contexts (code blocks, URLs, hyphenated terms)
 - Maintains a blacklist of technical terms that shouldn't be converted
 - Preserves original capitalization patterns
+- Supports Python file mode to convert only comments and docstrings, leaving code unchanged
 
 For full documentation, examples, and advanced usage, please visit the [documentation site](https://i-dot-ai.github.io/uwotm8/).
 
