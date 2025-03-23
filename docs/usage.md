@@ -32,7 +32,7 @@ echo "I love the color gray and my favorite food is filet mignon." | uwotm8
 ### Command Line Options
 
 ```
-usage: uwotm8 [-h] [--check] [--strict] [--include INCLUDE [INCLUDE ...]] [--exclude EXCLUDE [EXCLUDE ...]] [-o OUTPUT] [--version] [src ...]
+usage: uwotm8 [-h] [--check] [--strict] [--comments-only] [--include INCLUDE [INCLUDE ...]] [--exclude EXCLUDE [EXCLUDE ...]] [-o OUTPUT] [--version] [src ...]
 
 Convert American English spelling to British English spelling.
 
@@ -43,6 +43,7 @@ options:
   -h, --help            show this help message and exit
   --check               Don't write the files back, just return status. Return code 0 means nothing would change. Return code 1 means some files would be reformatted.
   --strict              Raise an exception if a word cannot be converted.
+  --comments-only       For Python files, only convert comments and docstrings, leaving code unchanged.
   --include INCLUDE [INCLUDE ...]
                         File extensions to include when processing directories. Default: .py .txt .md
   --exclude EXCLUDE [EXCLUDE ...]
@@ -64,6 +65,12 @@ Convert a file and write the output to a different file:
 
 ```bash
 uwotm8 american.txt -o british.txt
+```
+
+Convert only comments and docstrings in Python files:
+
+```bash
+uwotm8 --comments-only myproject/src/
 ```
 
 Only convert specific file types in a directory:
@@ -118,6 +125,25 @@ else:
     print("No changes needed")
 ```
 
+### Convert Only Comments and Docstrings in Python Files
+
+```python
+from uwotm8 import convert_python_comments_only
+
+# Convert only comments and docstrings in a Python file, preserving code
+convert_python_comments_only("script.py")
+
+# Convert comments/docstrings and write to a new file
+convert_python_comments_only("script.py", "script_gb.py")
+
+# Check mode
+would_change = convert_python_comments_only("script.py", check=True)
+if would_change:
+    print("Comments/docstrings would be modified")
+else:
+    print("No changes needed")
+```
+
 ### Process Multiple Files
 
 ```python
@@ -130,6 +156,10 @@ print(f"Processed {total} files, modified {modified}")
 # Check mode
 total, modified = process_paths(["file1.txt", "directory/"], check=True)
 print(f"Would modify {modified} of {total} files")
+
+# Process only comments and docstrings in Python files
+total, modified = process_paths(["src/"], comments_only=True)
+print(f"Modified comments in {modified} of {total} files")
 ```
 
 ### Stream Processing
@@ -146,6 +176,54 @@ with open("input.txt", "r") as f:
 ## Special Cases and Context Handling
 
 uwotm8 includes intelligent handling of various text contexts:
+
+### Python Comments-Only Mode
+
+When using the `--comments-only` option with Python files, only comments and docstrings are converted, leaving actual code unchanged:
+
+```bash
+# Input Python file:
+# This comment has color in it
+def set_color(color_value):
+    """Process the color parameter."""
+    return color_value  # Return the color
+
+# After running: uwotm8 --comments-only file.py
+# This comment has colour in it
+def set_color(color_value):
+    """Process the colour parameter."""
+    return color_value  # Return the colour
+```
+
+This is particularly useful for maintaining code functionality while ensuring documentation follows British English spelling conventions.
+
+#### Parameter Name Preservation
+
+When converting Python docstrings, parameter names in docstring sections are preserved in their original form to maintain consistency with the code:
+
+```python
+# Original:
+def process_data(color_map, flavor_list):
+    """Process data.
+
+    Args:
+        color_map: A mapping of colors to values.
+        flavor_list: A list of flavors to process.
+    """
+    return color_map
+
+# After conversion with --comments-only:
+def process_data(color_map, flavor_list):
+    """Process data.
+
+    Args:
+        color_map: A mapping of colours to values.
+        flavor_list: A list of flavours to process.
+    """
+    return color_map
+```
+
+Notice how "color_map" and "flavor_list" remain unchanged in the parameter names, while descriptive text is converted.
 
 ### Hyphenated Terms
 
