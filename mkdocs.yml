@@ -9,7 +9,9 @@ copyright: Maintained by <a href="https://i-dot-ai.com">i.AI</a>
 
 nav:
   - Home: index.md
-  - Modules: modules.md
+  - Usage Guide: usage.md
+  - Implementation Details: modules.md
+  - Abbreviations: abbreviations.md
 
 theme:
   logo: assets/i-dot-ai-white-invert.svg
