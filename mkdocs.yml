@@ -5,7 +5,7 @@ site_description: Converting American English to British English
 site_author: Incubator for AI
 edit_uri: edit/main/docs/
 repo_name: i-dot-ai/uwotm8
-copyright: Maintained by <a href="https://i-dot-ai.com">i.AI</a>
+copyright: Maintained by <a href="https://ai.gov.uk">i.AI</a>
 
 nav:
   - Home: index.md
