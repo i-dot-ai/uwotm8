@@ -9,7 +9,7 @@ from typing import Any, Optional, Union
 from breame.spelling import american_spelling_exists, get_british_spelling
 
 # Add this constant near the top of the file, after imports but before function definitions
-CONVERSION_BLACKLIST = {
+CONVERSION_IGNORE_LIST = {
     "filter": "philtre",  # Modern word vs archaic spelling
     "filet": "fillet",  # Common culinary term
     "program": "programme",  # Computing contexts often prefer "program"
@@ -26,7 +26,7 @@ CONVERSION_BLACKLIST = {
 }
 
 
-# Then modify the convert_american_to_british_spelling function to check the blacklist
+# Then modify the convert_american_to_british_spelling function to check the ignore_list
 def convert_american_to_british_spelling(  # noqa: C901
     text: str, strict: bool = False
 ) -> Any:
@@ -50,8 +50,8 @@ def convert_american_to_british_spelling(  # noqa: C901
             if "`" in pre or "`" in post:
                 return True
 
-            # Skip if word is in the blacklist
-            if word.lower() in CONVERSION_BLACKLIST:
+            # Skip if word is in the ignore_list
+            if word.lower() in CONVERSION_IGNORE_LIST:
                 return True
 
             # Check for hyphenated terms (e.g., "3-color", "x-coordinate")
@@ -222,51 +222,51 @@ def _extract_parameter_names_from_docstring(content: str) -> list[str]:
     return parameter_names
 
 
-def _create_parameter_blacklist(parameter_names: list[str]) -> dict[str, str]:
+def _create_parameter_ignore_list(parameter_names: list[str]) -> dict[str, str]:
     """
-    Create a blacklist dictionary from parameter names.
+    Create an ignore_list dictionary from parameter names.
 
     Args:
         parameter_names: List of parameter names
 
     Returns:
-        Dictionary of words to blacklist
+        Dictionary of words to ignore
     """
-    temp_blacklist = {}
+    temp_ignore_list = {}
     for param in parameter_names:
         # For each parameter, check if it contains words that would be converted
         param_words = re.findall(r"[a-zA-Z]+", param)
         for word in param_words:
             if american_spelling_exists(word.lower()):
-                temp_blacklist[word.lower()] = word.lower()
+                temp_ignore_list[word.lower()] = word.lower()
 
-    return temp_blacklist
+    return temp_ignore_list
 
 
-def _convert_with_blacklist(content: str, temp_blacklist: dict[str, str], strict: bool = False) -> str:
+def _convert_with_ignore_list(content: str, temp_ignore_list: dict[str, str], strict: bool = False) -> str:
     """
-    Convert content with a temporary blacklist.
+    Convert content with a temporary ignore list.
 
     Args:
         content: Text to convert
-        temp_blacklist: Dictionary of words to temporarily blacklist
+        temp_ignore_list: Dictionary of words to temporarily ignore
         strict: Whether to raise exceptions on conversion errors
 
     Returns:
         Converted content
     """
-    # Temporarily add our parameter-derived words to the blacklist
-    original_blacklist = CONVERSION_BLACKLIST.copy()
-    for word, keep_as in temp_blacklist.items():
-        if word not in CONVERSION_BLACKLIST:
-            CONVERSION_BLACKLIST[word] = keep_as
+    # Temporarily add our parameter-derived words to the ignore_list
+    original_ignore_list = CONVERSION_IGNORE_LIST.copy()
+    for word, keep_as in temp_ignore_list.items():
+        if word not in CONVERSION_IGNORE_LIST:
+            CONVERSION_IGNORE_LIST[word] = keep_as
 
-    # Convert the content with our expanded blacklist
+    # Convert the content with our expanded ignore_list
     converted_content = convert_american_to_british_spelling(content, strict=strict)
 
-    # Restore the original blacklist
-    CONVERSION_BLACKLIST.clear()
-    CONVERSION_BLACKLIST.update(original_blacklist)
+    # Restore the original ignore_list
+    CONVERSION_IGNORE_LIST.clear()
+    CONVERSION_IGNORE_LIST.update(original_ignore_list)
 
     return str(converted_content)
 
@@ -333,11 +333,11 @@ def convert_python_comments_only(
         # Get parameter names from docstring
         parameter_names = _extract_parameter_names_from_docstring(content)
 
-        # Create blacklist from parameter names
-        temp_blacklist = _create_parameter_blacklist(parameter_names)
+        # Create ignore_list from parameter names
+        temp_ignore_list = _create_parameter_ignore_list(parameter_names)
 
-        # Convert with the temporary blacklist
-        converted_content = _convert_with_blacklist(content, temp_blacklist, strict)
+        # Convert with the temporary ignore_list
+        converted_content = _convert_with_ignore_list(content, temp_ignore_list, strict)
 
         if converted_content != content:
             modified = True

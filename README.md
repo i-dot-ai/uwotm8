@@ -52,7 +52,7 @@ print(en_gb_str)
 
 - Converts common American English spellings to British English
 - Preserves words in special contexts (code blocks, URLs, hyphenated terms)
-- Maintains a blacklist of technical terms that shouldn't be converted
+- Maintains an ignore list of technical terms that shouldn't be converted
 - Preserves original capitalization patterns
 - Supports Python file mode to convert only comments and docstrings, leaving code unchanged
 

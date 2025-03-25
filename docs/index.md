@@ -44,7 +44,7 @@ uwotm8 intelligently preserves words in certain contexts:
 - Code blocks (text within backticks)
 - URLs and URIs
 - Hyphenated terms (e.g., "3-color" remains "3-color" rather than becoming "3-colour")
-- Technical terms in the blacklist (e.g., "program" in computing contexts)
+- Technical terms in the ignore list (e.g., "program" in computing contexts)
 
 For detailed information on how these features work, see the [Implementation Details](modules.md).
 

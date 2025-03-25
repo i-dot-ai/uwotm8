@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import pytest
 
 from uwotm8.convert import (
-    CONVERSION_BLACKLIST,
+    CONVERSION_IGNORE_LIST,
     convert_american_to_british_spelling,
     convert_file,
     convert_python_comments_only,
@@ -30,7 +30,7 @@ class TestConvertAmericanToBritishSpelling:
         expected = "The colour of the aluminium armour is."
         assert convert_american_to_british_spelling(text) == expected
 
-        # Note: 'gray' is in the blacklist as 'grey', so it won't be converted automatically
+        # Note: 'gray' is in the ignore_list as 'grey', so it won't be converted automatically
         assert convert_american_to_british_spelling("color") == "colour"
         assert convert_american_to_british_spelling("aluminum") == "aluminium"
         assert convert_american_to_british_spelling("armor") == "armour"
@@ -57,9 +57,9 @@ class TestConvertAmericanToBritishSpelling:
         text = "This text contains no American spelling variants."
         assert convert_american_to_british_spelling(text) == text
 
-    def test_blacklisted_words(self):
-        """Test that blacklisted words are not converted."""
-        for american, _ in CONVERSION_BLACKLIST.items():
+    def test_ignored_words(self):
+        """Test that ignored words are not converted."""
+        for american, _ in CONVERSION_IGNORE_LIST.items():
             assert convert_american_to_british_spelling(american) == american
 
     def test_code_block_skipping(self):
