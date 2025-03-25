@@ -505,7 +505,7 @@ def main() -> int:
     parser.add_argument(
         "--version",
         action="version",
-        version="%(prog)s 0.1.2",
+        version="%(prog)s 0.1.3",
     )
 
     args = parser.parse_args()
