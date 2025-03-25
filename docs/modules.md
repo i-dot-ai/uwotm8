@@ -22,9 +22,9 @@ Words within code blocks (surrounded by backticks) are not converted, preserving
 
 Words that appear in lines containing URLs or URIs (identified by "://" or "www.") are not converted to avoid breaking links.
 
-### Conversion Blacklist
+### Conversion Ignore List
 
-A blacklist of words that should not be converted is maintained, including technical terms that have different meanings in different contexts:
+An ignore list of words that should not be converted is maintained, including technical terms that have different meanings in different contexts:
 
 - "program" vs "programme" (in computing contexts)
 - "disk" vs "disc" (in computing contexts)

@@ -254,16 +254,16 @@ echo "Visit http://example.com/color-picker to select a color." | uwotm8
 # Output: "Visit http://example.com/color-picker to select a colour."
 ```
 
-### Technical Terms Blacklist
+### Technical Terms Ignore List
 
-A blacklist of technical terms that shouldn't be converted is maintained:
+An ignore list of technical terms that shouldn't be converted is maintained:
 
 ```bash
 echo "This program uses an analog signal processor." | uwotm8
 # Output: "This program uses an analog signal processor."
 ```
 
-Common blacklisted terms include:
+Common ignored terms include:
 
 - "program" (vs "programme") in computing contexts
 - "disk" (vs "disc") in computing contexts
