@@ -23,6 +23,8 @@ CONVERSION_IGNORE_LIST = {
     "gray": "grey",  # Common in color specifications
     "mold": "mould",  # Scientific contexts often prefer "mold"
     "install": "instal",  # British spelling is "instal"
+    "connection": "connexion",  # Modern connectivity term
+    "draft": "draught",  # Different meanings in different contexts
 }
 
 
@@ -505,7 +507,7 @@ def main() -> int:
     parser.add_argument(
         "--version",
         action="version",
-        version="%(prog)s 0.1.3",
+        version="%(prog)s 0.1.4",
     )
 
     args = parser.parse_args()
