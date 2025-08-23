@@ -322,7 +322,7 @@ def convert_python_comments_only(
 
     # Handle docstrings with special handling for parameter names in docstring Args
     # First, we'll use regex to find triple-quoted strings
-    docstring_pattern = r'("""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\')'
+    docstring_pattern = r'("""[\s\S]*?"""|"""[\s\S]*?""")'
 
     def replace_docstring(match: re.Match[str]) -> str:
         nonlocal modified
@@ -452,7 +452,7 @@ def _handle_file_with_output(args: argparse.Namespace, src_file: Path) -> int:
         return 0
 
 
-def main() -> int:
+def main() -> int:  # noqa: C901
     """Command-line interface."""
     parser = argparse.ArgumentParser(
         prog="uwotm8",
@@ -510,7 +510,23 @@ def main() -> int:
         version="%(prog)s 0.1.4",
     )
 
+    parser.add_argument(
+        "--ignore",
+        help="A space-separated string of words to ignore, or a path to a text file containing words to ignore.",
+    )
+
     args = parser.parse_args()
+
+    if args.ignore:
+        ignore_path = Path(args.ignore)
+        if ignore_path.is_file():
+            with open(ignore_path, encoding="utf-8") as f:
+                ignore_words = [line.strip() for line in f if line.strip()]
+        else:
+            ignore_words = args.ignore.split()
+
+        for word in ignore_words:
+            CONVERSION_IGNORE_LIST[word.lower()] = word.lower()
 
     # Process stdin if no paths provided
     if not args.src:
