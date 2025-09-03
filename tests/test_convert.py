@@ -626,7 +626,7 @@ class TestMainFunction:
         with tempfile.NamedTemporaryFile(mode="w+", suffix=".py", delete=False) as temp_file:
             temp_path = temp_file.name
             temp_file.write("""# This comment has color
-variable = "String with color"
+variable = \"String with color\"
 # Another comment with flavor
 """)
 
@@ -647,3 +647,40 @@ variable = "String with color"
                 assert "# Another comment with flavour" in content
         finally:
             os.unlink(temp_path)
+
+    def test_ignore_option_file(self):
+        """Test the --ignore option with a file."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create a file to convert
+            src_path = os.path.join(temp_dir, "test.txt")
+            with open(src_path, "w") as f:
+                f.write("filters and connection")
+
+            # Create an ignore file
+            ignore_path = os.path.join(temp_dir, "ignore.txt")
+            with open(ignore_path, "w") as f:
+                f.write("filters\nconnection")
+
+            with patch.object(sys, "argv", ["uwotm8", src_path, "--ignore", ignore_path]):
+                exit_code = main()
+                assert exit_code == 0
+
+            # The file should not be modified
+            with open(src_path) as f:
+                assert f.read() == "filters and connection"
+
+    def test_ignore_option_string(self):
+        """Test the --ignore option with a string."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create a file to convert
+            src_path = os.path.join(temp_dir, "test.txt")
+            with open(src_path, "w") as f:
+                f.write("filters and connection")
+
+            with patch.object(sys, "argv", ["uwotm8", src_path, "--ignore", "filters connection"]):
+                exit_code = main()
+                assert exit_code == 0
+
+            # The file should not be modified
+            with open(src_path) as f:
+                assert f.read() == "filters and connection"

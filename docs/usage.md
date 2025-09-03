@@ -51,6 +51,7 @@ options:
   -o OUTPUT, --output OUTPUT
                         Output file (when processing a single file). If not provided, content is written back to source file.
   --version             show program's version number and exit
+  --ignore IGNORE       A space-separated string of words to ignore, or a path to a text file containing words to ignore.
 ```
 
 ### Examples
@@ -269,3 +270,32 @@ Common ignored terms include:
 - "disk" (vs "disc") in computing contexts
 - "analog" (vs "analogue") in technical contexts
 - "filet" (vs "fillet") in culinary contexts
+
+### Customising the Ignore List
+
+`uwotm8` includes a default ignore list for technical terms that should not be converted (e.g., "program" instead of "programme" in computing contexts). You can extend this list with your own words or by providing a dedicated ignore file.
+
+This is useful when you have specific words that you do not want to be converted. For example, you may be writing about a product named "Color" and you do not want it to be converted to "Colour".
+
+You can specify words to ignore using the `--ignore` option. This option accepts either a space-separated string of words or a path to a text file.
+
+**Using a string:**
+
+```bash
+uwotm8 --ignore "filters connection" my_file.txt
+```
+
+**Using a file:**
+
+If you have a file named `oritem8.txt` with the following content:
+
+```
+filters
+connection
+```
+
+You can run the following command:
+
+```bash
+uwotm8 --ignore oritem8.txt my_file.txt
+```
