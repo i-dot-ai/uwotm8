@@ -72,9 +72,21 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
       - name: Set up the environment
         uses: ./.github/actions/setup-poetry-env
+
       - name: Check build
         run: |
           echo "Dynamic version: $(poetry dynamic-versioning show)"
           poetry build
+
+      - name: Check version
+        run: |
+          # Check for 0.0.0 version in built artifacts
+          if ls dist/*0.0.0* 2>/dev/null; then
+            echo "❌ ERROR: Found version 0.0.0 in build artifacts!"
+            echo "Dynamic versioning is not working properly."
+            ls -la dist/
+            exit 1
+          fi
