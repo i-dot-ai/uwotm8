@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: actions/cache@v4
         with:
@@ -29,14 +29,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
       fail-fast: false
     defaults:
       run:
         shell: bash
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up the environment
         uses: ./.github/actions/setup-poetry-env
@@ -50,17 +50,31 @@ jobs:
         run: poetry run mypy
 
       - name: Upload coverage reports to Codecov with GitHub Action on Python 3.11
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: ${{ matrix.python-version == '3.11' }}
 
   check-docs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up the environment
         uses: ./.github/actions/setup-poetry-env
 
       - name: Check if documentation can be built
         run: poetry run mkdocs build -s
+
+  check-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Set up the environment
+        uses: ./.github/actions/setup-poetry-env
+      - name: Check build
+        run: |
+          echo "Dynamic version: $(poetry dynamic-versioning show)"
+          poetry build
