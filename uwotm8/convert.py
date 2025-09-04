@@ -3,6 +3,7 @@ import os
 import re
 import sys
 from collections.abc import Generator, Iterable
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -507,7 +508,7 @@ def main() -> int:
     parser.add_argument(
         "--version",
         action="version",
-        version="%(prog)s 0.1.4",
+        version=version("uwotm8"),
     )
 
     args = parser.parse_args()
