@@ -29,6 +29,11 @@ runs:
       run: poetry config virtualenvs.in-project true
       shell: bash
 
+    - name: Install Poetry plugins
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      run: poetry self add "poetry-dynamic-versioning[plugin]"
+      shell: bash
+
     - name: Load cached venv
       id: cached-poetry-dependencies
       uses: actions/cache@v4
