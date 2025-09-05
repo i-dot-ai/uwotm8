@@ -12,6 +12,7 @@ from breame.spelling import american_spelling_exists, get_british_spelling
 # Add this constant near the top of the file, after imports but before function definitions
 CONVERSION_IGNORE_LIST = {
     "filter": "philtre",  # Modern word vs archaic spelling
+    "filters": "philtres",  # Modern word vs archaic spelling
     "filet": "fillet",  # Common culinary term
     "program": "programme",  # Computing contexts often prefer "program"
     "disk": "disc",  # Computing contexts often prefer "disk"
